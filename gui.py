@@ -33,7 +33,7 @@ class GUI:
     def plotting(self):
         self.allow_plotting = True
         self.window.withdraw()
-        self.plot = Plot(is_show=True)
+        self.plot = Plot()
         self.plot.set_after_close(func=self.after_close_plot)
         for i in range(10):
             number = random.randint(0, 10)
@@ -41,15 +41,14 @@ class GUI:
                 break
             self.plot.update_plot(number)
             time.sleep(0.2)
+        now = datetime.now()
+        self.plot.save(
+            settings.PLOT_BASE_ADDRESS + f"{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}")
         # self.plot.close()
 
     def after_close_plot(self, event):
         self.allow_plotting = False
-        now = datetime.now()
         self.window.deiconify()
-
-        # self.plot.save(
-        #     settings.PLOT_BASE_ADDRESS + f"{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}")
 
         # self.__init__()
 

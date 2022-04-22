@@ -1,22 +1,15 @@
 import matplotlib.pyplot as plt
-
+import time
 
 class Plot:
-    def __init__(self, is_show=True):
-        self.is_show = is_show
+    def __init__(self):
         self._init_line()
-        if self.is_show:
-            self._init_window()
 
     def _init_line(self):
         plt.ion()
-        self._figure = plt.figure()
+        self._figure = plt.figure(figsize=(7,7))
         self._ax = self._figure.add_subplot(111)
         self._line, = self._ax.plot([], [], 'b-')
-
-    @staticmethod
-    def _init_window():
-        plt.show()
 
     def _update_line(self, y, x=None):
         if x is None:
@@ -35,7 +28,6 @@ class Plot:
         plt.savefig(file_path)
 
     def set_after_close(self, func):
-
         self._figure.canvas.mpl_connect('close_event', func)
 
     def close(self):
