@@ -38,7 +38,7 @@ class GUI:
         for i in range(10):
             number = random.randint(0, 10)
             if not self.allow_plotting:
-                break
+                return
             self.plot.update_plot(number)
             time.sleep(0.2)
         now = datetime.now()
@@ -49,7 +49,6 @@ class GUI:
     def after_close_plot(self, event):
         self.allow_plotting = False
         self.window.deiconify()
-
         # self.__init__()
 
 

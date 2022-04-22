@@ -31,4 +31,4 @@ class Plot:
         self._figure.canvas.mpl_connect('close_event', func)
 
     def close(self):
-        plt.close()
+        plt.close(self._figure)
