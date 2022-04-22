@@ -19,14 +19,24 @@ class GUI:
         self.window = Tk()
         self.window.title('Plotting in Tkinter')
         self.window.geometry("500x500")
+        x, y = 40, 40
+        label_width = 100
+        label_height = 40
+        padding = 10
 
-        # button that displays the plot
-        plot_button = Button(master=self.window,
-                             command=self.plotting,
-                             height=2,
-                             width=10,
-                             text="Plot")
-        plot_button.pack()
+        time1_label = Label(self.window, text="arduino start time: ").place(x=x, y=y)
+        time1_label_input = Entry(self.window, width=30).place(x=x + label_width + padding, y=y)
+
+        new_y = y + label_height + padding
+        time2_label = Label(self.window, text="Modules off time: ").place(x=x, y=new_y)
+        time2_label = Entry(self.window, width=30).place(x=x + label_width + padding, y=new_y)
+
+        new_y = y + 2 * (label_height + padding)
+        time3_label = Label(self.window, text="arduino off time: ").place(x=x, y=new_y)
+        time3_label = Entry(self.window, width=30).place(x=x + label_width + padding, y=new_y)
+
+        new_y = y + 3 * (label_height + padding)
+        submit_button = Button(self.window, text="plot", command=self.plotting, ).place(x=x, y=new_y)
 
         self.window.mainloop()
 
