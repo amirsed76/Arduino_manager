@@ -15,7 +15,7 @@ class GUI:
         self.plot = None
         self.allow_plotting = False
         self.arduino_manager = ArduinoManager(info_path=settings.INFORMATION_PATH, command_path=settings.COMMAND_PATH)
-
+        self.data = []
         self.window = Tk()
         self.window.title('Plotting in Tkinter')
         x, y = 40, 40
@@ -50,37 +50,26 @@ class GUI:
         self.plot = Plot()
         self.plot.set_after_close(func=self.after_close_plot)
         index = 0
-        self.plot.timer()
+        self.plot.timer(max_time=time_plotting)
         for i in range(int(time_plotting // settings.SAMPLING_PERIOD) + 1):
-            data = self.arduino_manager.get_data()
-            if len(data) > index:
-                new_data = data[index]
+            if len(self.data) > index:
+                new_data = self.data[index]
                 for key, value in new_data.items():
 
                     self.plot.update_line(line_name=key, y=value)
                     if not self.allow_plotting:
                         return
                 index += 1
-                self.plot.update_plot()
+            self.plot.update_plot()
             time.sleep(settings.SAMPLING_PERIOD)
 
         now = datetime.now()
         self.plot.save(settings.PLOT_BASE_ADDRESS + f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}")
 
-        # for i in range(10):
-        #     number1 = random.randint(0, 10)
-        #     number2 = random.randint(0, 10)
-        #     number3 = random.randint(0, 10)
-        #     self.plot.update_line(line_name="a", y=number1)
-        #     self.plot.update_line(line_name="b", y=number2)
-        #     self.plot.update_line(line_name="c", y=number3)
-        #     self.plot.update_plot()
-        #     if not self.allow_plotting:
-        #         return
-        #     time.sleep(0.2)
-        # now = datetime.now()
-        # self.plot.save(
-        #     settings.PLOT_BASE_ADDRESS + f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}")
+    def reading_data(self, time_getting):
+        self.data = []
+        for i in range(int(time_getting // settings.SAMPLING_PERIOD) + 1):
+            self.data = self.arduino_manager.get_data()
 
     def run_button(self):
 
@@ -93,6 +82,9 @@ class GUI:
             return
         arduino_thread = threading.Thread(target=self.arduino_manager.run, args=(start_time, pick_time, end_time))
         arduino_thread.start()
+
+        data_thread = threading.Thread(target=self.reading_data, args=(start_time + pick_time + end_time,))
+        data_thread.start()
         self.plotting(time_plotting=int(start_time + pick_time + end_time) + 1)
 
     def after_close_plot(self, event):

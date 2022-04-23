@@ -9,4 +9,5 @@ if __name__ == '__main__':
         while True:
             time.sleep(1)
             print("_______")
-            print(f.read())
+            print(f.read())  # read again
+            f.seek(0)  # offset of 0

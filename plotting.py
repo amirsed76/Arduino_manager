@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import matplotlib.pyplot as plt
 
@@ -11,6 +11,8 @@ class Plot:
         self._figure = plt.figure(figsize=(7, 7))
         self._ax = self._figure.add_subplot(111)
         self._lines = dict()
+        self.start_time = datetime.now()
+        self.timer_max_time = None
 
     def update_line(self, line_name, y, x=None):
         if line_name not in self._lines.keys():
@@ -18,8 +20,6 @@ class Plot:
             color = self.colors[len(self._lines.keys()) % len(self.colors)]
             self._lines[line_name], = self._ax.plot([x], [y], 'o-', label=line_name, color=color)
             plt.legend(loc="upper right")
-
-
 
         else:
             line = self._lines[line_name]
@@ -43,12 +43,16 @@ class Plot:
     def close(self):
         plt.close(self._figure)
 
-    @staticmethod
-    def update_title(axes):
-        axes.set_title(datetime.now())
+    def update_title(self, axes):
+        _time = datetime.now() - self.start_time
+        if _time.seconds <= self.timer_max_time:
+            axes.set_title(str(timedelta(seconds=_time.seconds)))
+        else:
+            axes.set_title(str(timedelta(seconds=self.timer_max_time)))
         axes.figure.canvas.draw()
 
-    def timer(self):
+    def timer(self, max_time=None):
+        self.timer_max_time = max_time
         timer = self._figure.canvas.new_timer(interval=100)
         timer.add_callback(self.update_title, self._ax)
         timer.start()
