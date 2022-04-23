@@ -2,7 +2,7 @@ import enum
 
 INFORMATION_PATH = "information.json"
 PLOT_BASE_ADDRESS = "plots/"
-SAMPLING_PERIOD = 0.1
+SAMPLING_PERIOD = 0.4
 COMMAND_PATH = "command.json"
 
 

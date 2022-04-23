@@ -7,12 +7,15 @@ import time
 import settings
 import threading
 from arduinomanager import ArduinoManager
+import matplotlib.pyplot as plt
 
 
 class GUI:
     def __init__(self):
         self.plot = None
         self.allow_plotting = False
+        self.arduino_manager = ArduinoManager(info_path=settings.INFORMATION_PATH, command_path=settings.COMMAND_PATH)
+
         self.window = Tk()
         self.window.title('Plotting in Tkinter')
         x, y = 40, 40
@@ -41,6 +44,44 @@ class GUI:
 
         self.window.mainloop()
 
+    def plotting(self, time_plotting: int):
+        self.allow_plotting = True
+        self.window.withdraw()
+        self.plot = Plot()
+        self.plot.set_after_close(func=self.after_close_plot)
+        index = 0
+        self.plot.timer()
+        for i in range(int(time_plotting // settings.SAMPLING_PERIOD) + 1):
+            data = self.arduino_manager.get_data()
+            if len(data) > index:
+                new_data = data[index]
+                for key, value in new_data.items():
+
+                    self.plot.update_line(line_name=key, y=value)
+                    if not self.allow_plotting:
+                        return
+                index += 1
+                self.plot.update_plot()
+            time.sleep(settings.SAMPLING_PERIOD)
+
+        now = datetime.now()
+        self.plot.save(settings.PLOT_BASE_ADDRESS + f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}")
+
+        # for i in range(10):
+        #     number1 = random.randint(0, 10)
+        #     number2 = random.randint(0, 10)
+        #     number3 = random.randint(0, 10)
+        #     self.plot.update_line(line_name="a", y=number1)
+        #     self.plot.update_line(line_name="b", y=number2)
+        #     self.plot.update_line(line_name="c", y=number3)
+        #     self.plot.update_plot()
+        #     if not self.allow_plotting:
+        #         return
+        #     time.sleep(0.2)
+        # now = datetime.now()
+        # self.plot.save(
+        #     settings.PLOT_BASE_ADDRESS + f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}")
+
     def run_button(self):
 
         try:
@@ -50,37 +91,13 @@ class GUI:
         except Exception as e:
             messagebox.showerror('خطا', f"اعداد وارد شده معتبر نمیباشند\n{e}")
             return
-        arduino_manager = ArduinoManager(info_path=settings.INFORMATION_PATH, command_path=settings.COMMAND_PATH)
-        arduino_thread = threading.Thread(target=arduino_manager.run, args=(start_time, pick_time, end_time))
+        arduino_thread = threading.Thread(target=self.arduino_manager.run, args=(start_time, pick_time, end_time))
         arduino_thread.start()
-        # TODO command to arduino for start and off Modules and finish
-
-        self.allow_plotting = True
-        self.window.withdraw()
-        self.plot = Plot()
-        self.plot.set_after_close(func=self.after_close_plot)
-        for i in range(10):
-            number1 = random.randint(0, 10)
-            number2 = random.randint(0, 10)
-            number3 = random.randint(0, 10)
-            self.plot.update_line(line_name="a", y=number1)
-            self.plot.update_line(line_name="b", y=number2)
-            self.plot.update_line(line_name="c", y=number3)
-            self.plot.update_plot()
-            if not self.allow_plotting:
-                return
-            time.sleep(0.2)
-        now = datetime.now()
-        self.plot.save(
-            settings.PLOT_BASE_ADDRESS + f"{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}")
-
-        arduino_thread.join(timeout=start_time + pick_time + end_time + 2)
-        # self.plot.close()
+        self.plotting(time_plotting=int(start_time + pick_time + end_time) + 1)
 
     def after_close_plot(self, event):
         self.allow_plotting = False
         self.window.deiconify()
-        # self.__init__()
 
 
 if __name__ == '__main__':

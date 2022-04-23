@@ -1,11 +1,12 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Button
-import random
+import numpy as np
+from datetime import datetime
+import time
+
 
 if __name__ == '__main__':
-    plt.ion()
-    figure = plt.figure(figsize=(5,5))
-    ax = figure.add_subplot(111)
-    line, = ax.plot([0], [1], 'b-')
-    plt.pause(10)
+    with open("information.json","r") as f:
+        while True:
+            time.sleep(1)
+            print("_______")
+            print(f.read())
