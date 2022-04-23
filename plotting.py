@@ -19,7 +19,7 @@ class Plot:
         if line_name not in self._lines.keys():
             x = 0 if x is None else x
             color = self.colors[len(self._lines.keys()) % len(self.colors)]
-            self._lines[line_name], = self._ax.plot([x], [y], 'b-', label=line_name, color=color)
+            self._lines[line_name], = self._ax.plot([x], [y], '-', label=line_name, color=color)
             plt.legend(loc="upper right")
 
 
@@ -30,7 +30,7 @@ class Plot:
 
             xs, ys = list(line.get_xdata()) + [x], list(line.get_ydata()) + [y]
             color = self.colors[list(self._lines.keys()).index(line_name) % len(self.colors)]
-            self._lines[line_name], = self._ax.plot(xs, ys, 'b-', label=line_name, color=color)
+            self._lines[line_name], = self._ax.plot(xs, ys, '-', label=line_name, color=color)
 
     def update_plot(self):
         self._figure.canvas.draw()
