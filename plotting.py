@@ -56,4 +56,4 @@ class Plot:
         timer = self._figure.canvas.new_timer(interval=100)
         timer.add_callback(self.update_title, self._ax)
         timer.start()
-        plt.show()
+        # plt.show()

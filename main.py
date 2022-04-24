@@ -57,9 +57,11 @@ class GUI:
                 for key, value in new_data.items():
 
                     self.plot.update_line(line_name=key, y=value)
-                    if not self.allow_plotting:
-                        return
+
                 index += 1
+            if not self.allow_plotting:
+                print("it's ok")
+                return
             self.plot.update_plot()
             time.sleep(settings.SAMPLING_PERIOD)
 
@@ -74,16 +76,26 @@ class GUI:
     def run_button(self):
 
         try:
-            start_time = int(self.time1_input.get())
-            pick_time = int(self.time2_input.get())
-            end_time = int(self.time3_input.get())
+            time1 = int(self.time1_input.get())
+            time2 = int(self.time2_input.get())
+            time3 = int(self.time3_input.get())
+
+            start_time = time1
+            pick_time = time2 - time1
+            end_time = time3 - time2
+
+            if start_time <= 0 or pick_time <= 0 or end_time <= 0:
+                raise Exception("")
+
         except Exception as e:
             messagebox.showerror('خطا', f"اعداد وارد شده معتبر نمیباشند\n{e}")
             return
         arduino_thread = threading.Thread(target=self.arduino_manager.run, args=(start_time, pick_time, end_time))
+        arduino_thread.daemon = True
         arduino_thread.start()
 
         data_thread = threading.Thread(target=self.reading_data, args=(start_time + pick_time + end_time,))
+        data_thread.daemon = True
         data_thread.start()
         self.plotting(time_plotting=int(start_time + pick_time + end_time) + 1)
 
