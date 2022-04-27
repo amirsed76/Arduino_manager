@@ -165,10 +165,7 @@ class GUI:
             return
 
         write_command(first_time=first_time, second_time=second_time, third_time=third_time, cycle=cycle)
-        # data_thread = threading.Thread(target=self.reading_data, args=(on_time, off_time))
-        # data_thread.daemon = True
-        # data_thread.start()
-        self.plotting(start_plotting=on_time, end_plotting=off_time*cycle)
+        self.plotting(start_plotting=first_time, end_plotting=third_time)
 
     def after_close_plot(self, event):
         self.allow_plotting = False
