@@ -3,9 +3,22 @@ from tkinter import *
 from tkinter import messagebox
 from plotting import Plot
 import time
-import settings
 import threading
 import json
+import pandas as pd
+
+
+class Setting:
+    with open("settings.json", "r") as f:
+        data = json.load(f)
+        INFORMATION_PATH = data["INFORMATION_PATH"]
+        PLOT_BASE_ADDRESS = data["PLOT_BASE_ADDRESS"]
+        SAMPLING_PERIOD = data["SAMPLING_PERIOD"]
+        COMMAND_PATH = data["COMMAND_PATH"]
+        CSV_BASE_ADDRESS = data["CSV_BASE_ADDRESS"]
+
+
+settings = Setting()
 
 
 def write_command(first_time, second_time, third_time, cycle):
@@ -102,7 +115,9 @@ class GUI:
             self.plot.update_plot()
 
         now = datetime.now()
-        self.plot.save(settings.PLOT_BASE_ADDRESS + f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}")
+        time_str = f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}"
+        self.plot.save(settings.PLOT_BASE_ADDRESS + time_str)
+        pd.read_json(settings.INFORMATION_PATH).to_csv(settings.CSV_BASE_ADDRESS + time_str + ".csv")
 
     def read_file(self):
         while True:
@@ -136,19 +151,12 @@ class GUI:
     def run_button(self):
 
         try:
-            # on_time = int(self.time1_input.get())
-            # first_time = int(self.time2_input.get())
-            # second_time = int(self.time3_input.get())
-            # third_time = int(self.time4_input.get())
-            # off_time = int(self.time5_input.get())
-            # cycle = int(self.cycle_input.get())
-            #
-            on_time = 4
-            first_time = 10
-            second_time = 11
-            third_time = 13
-            off_time = 14
-            cycle = 1
+            on_time = int(self.time1_input.get())
+            first_time = int(self.time2_input.get())
+            second_time = int(self.time3_input.get())
+            third_time = int(self.time4_input.get())
+            off_time = int(self.time5_input.get())
+            cycle = int(self.cycle_input.get())
 
             if not (0 <= on_time <= first_time < second_time < third_time <= off_time) or cycle < 1:
                 raise Exception("اعداد وارد شده معتبر نمیباشند")
