@@ -27,6 +27,7 @@ class GUI:
         self.data = []
         self.window = Tk()
         self.window.title('Plotting in Tkinter')
+        self.info_file = None
 
         x, y = 40, 40
         label_width, label_height = 100, 40
@@ -69,61 +70,97 @@ class GUI:
         self.window.resizable(False, False)
         self.window.mainloop()
 
-    def plotting(self, time_plotting: int):
+    def plotting(self, start_plotting, end_plotting):
         self.allow_plotting = True
         self.window.withdraw()
         self.plot = Plot()
         self.plot.set_after_close(func=self.after_close_plot)
         index = 0
-        self.plot.timer(max_time=time_plotting)
-        for i in range(int(time_plotting // settings.SAMPLING_PERIOD) + 1):
-            if len(self.data) > index:
-                new_data = self.data[index]
-                for key, value in new_data.items():
-                    self.plot.update_line(line_name=key, y=value)
+        self.plot.timer(max_time=end_plotting)
+        start_time = time.time()
+        data_gen = self.reading_data(on_time=start_plotting, off_time=end_plotting)
+        while True:
+            passed_time = time.time() - start_time
+            if passed_time >= end_plotting:
+                time.sleep(settings.SAMPLING_PERIOD)
+                break
+
+            elif passed_time >= start_plotting:
+                try:
+                    new_data = data_gen.__next__()
+                    if new_data is not None:
+                        # new_data = self.data[index]
+                        for key, value in new_data.items():
+                            self.plot.update_line(line_name=str(key), y=value)
+                except StopIteration:
+                    print("stop iteration")
 
                 index += 1
             if not self.allow_plotting:
-                print("it's ok")
+                print("plot has been finished")
                 return
             self.plot.update_plot()
-            time.sleep(settings.SAMPLING_PERIOD)
 
         now = datetime.now()
         self.plot.save(settings.PLOT_BASE_ADDRESS + f"{str(now).replace(':', '-').replace(' ', '-').replace('.', '-')}")
 
-    def reading_data(self, time_getting):
+    def read_file(self):
+        while True:
+            self.info_file.seek(0)
+            self.data = json.load(self.info_file)
+            time.sleep(settings.SAMPLING_PERIOD / 3)
+            if not self.allow_plotting:
+                return
+
+    def reading_data(self, on_time, off_time):
+        start_time = time.time()
         self.data = []
-        for i in range(int(time_getting // settings.SAMPLING_PERIOD) + 1):
-            # TODO read data
-            self.data = self.arduino_manager.get_data()
+        read_file_thread = threading.Thread(target=self.read_file)
+        self.info_file = open(settings.INFORMATION_PATH, "r")
+        read_file_thread.start()
+        index = 0
+
+        while True:
+            self.info_file.seek(0)
+            if len(self.data) > index:
+                new_item = self.data[index]
+                cycle = new_item.pop("cycle")
+                yield dict([(k + f'_{cycle}', v) for k, v in new_item.items()])
+                index += 1
+            else:
+                yield None
+                time.sleep(settings.SAMPLING_PERIOD / 3)
+            if not self.allow_plotting:
+                return
 
     def run_button(self):
 
         try:
-            on_time = int(self.time1_input.get())
-            first_time = int(self.time2_input.get())
-            second_time = int(self.time3_input.get())
-            third_time = int(self.time4_input.get())
-            off_time = int(self.time5_input.get())
-            cycle = int(self.cycle_input.get())
+            # on_time = int(self.time1_input.get())
+            # first_time = int(self.time2_input.get())
+            # second_time = int(self.time3_input.get())
+            # third_time = int(self.time4_input.get())
+            # off_time = int(self.time5_input.get())
+            # cycle = int(self.cycle_input.get())
+            #
+            on_time = 4
+            first_time = 10
+            second_time = 11
+            third_time = 13
+            off_time = 14
+            cycle = 1
 
-            if not (0 < on_time < first_time < second_time < third_time < off_time) or cycle < 1:
+            if not (0 <= on_time <= first_time < second_time < third_time <= off_time) or cycle < 1:
                 raise Exception("اعداد وارد شده معتبر نمیباشند")
         except Exception as e:
             messagebox.showerror('خطا', f"{e}")
             return
 
         write_command(first_time=first_time, second_time=second_time, third_time=third_time, cycle=cycle)
-
-        arduino_thread = threading.Thread(target=self.arduino_manager.run, args=(start_time, pick_time, end_time))
-        arduino_thread.daemon = True
-        arduino_thread.start()
-
-        data_thread = threading.Thread(target=self.reading_data, args=(start_time + pick_time + end_time,))
-        data_thread.daemon = True
-        data_thread.start()
-        self.plotting(time_plotting=int(start_time + pick_time + end_time) + 1)
+        # data_thread = threading.Thread(target=self.reading_data, args=(on_time, off_time))
+        # data_thread.daemon = True
+        # data_thread.start()
+        self.plotting(start_plotting=on_time, end_plotting=off_time)
 
     def after_close_plot(self, event):
         self.allow_plotting = False
