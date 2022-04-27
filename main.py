@@ -168,7 +168,7 @@ class GUI:
         # data_thread = threading.Thread(target=self.reading_data, args=(on_time, off_time))
         # data_thread.daemon = True
         # data_thread.start()
-        self.plotting(start_plotting=on_time, end_plotting=off_time)
+        self.plotting(start_plotting=on_time, end_plotting=off_time*cycle)
 
     def after_close_plot(self, event):
         self.allow_plotting = False
