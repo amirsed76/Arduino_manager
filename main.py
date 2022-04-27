@@ -21,12 +21,14 @@ class Setting:
 settings = Setting()
 
 
-def write_command(first_time, second_time, third_time, cycle):
+def write_command(on_time, first_time, second_time, third_time, off_time, cycle):
     info = {
         "date_time": str(datetime.now()),
+        "on_time": on_time,
         "first_time": first_time,
         "second_time": second_time,
         "third_time": third_time,
+        "off_time": off_time,
         "cycle": cycle
     }
     with open(settings.COMMAND_PATH, "w") as f:
@@ -158,14 +160,15 @@ class GUI:
             off_time = int(self.time5_input.get())
             cycle = int(self.cycle_input.get())
 
-            if not (0 <= on_time <= first_time < second_time < third_time <= off_time) or cycle < 1:
+            if not (0 <= on_time <= first_time <= second_time <= third_time <= off_time) or cycle < 1:
                 raise Exception("اعداد وارد شده معتبر نمیباشند")
         except Exception as e:
             messagebox.showerror('خطا', f"{e}")
             return
 
-        write_command(first_time=first_time, second_time=second_time, third_time=third_time, cycle=cycle)
-        self.plotting(start_plotting=first_time, end_plotting=third_time)
+        write_command(first_time=first_time, second_time=second_time, third_time=third_time, cycle=cycle,
+                      on_time=on_time, off_time=off_time)
+        self.plotting(start_plotting=first_time, end_plotting=third_time*cycle)
 
     def after_close_plot(self, event):
         self.allow_plotting = False
