@@ -55,5 +55,5 @@ class Plot:
         self.timer_max_time = max_time
         timer = self._figure.canvas.new_timer(interval=100)
         timer.add_callback(self.update_title, self._ax)
-        timer.start()
+        timer.first_time_action()
         # plt.show()
